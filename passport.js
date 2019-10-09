@@ -10,7 +10,7 @@ const jwtOptions = {
 };
 
 const strategy = new JwtStrategy(jwtOptions, (jwt_payload, next) => {
-    userHelper.getUser(jwt_payload.id).then(user => {
+    userHelper.getUserById(jwt_payload.id).then(user => {
         if(user) {
             next(null, user);
         }

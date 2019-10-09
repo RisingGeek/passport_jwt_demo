@@ -9,8 +9,7 @@ router.get('/', function(req, res, next) {
   res.send('respond with a resource');
 });
 
-router.get('/login', passport.authenticate('jwt', {session: false}), function(req, res, next) {
-  console.log('here')
+router.get('/login', passport.authenticate('jwt', {session: false}), (req, res, next) => {
   res.json('hooray! See without token');
 });
 
