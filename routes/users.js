@@ -2,7 +2,15 @@ var express = require('express');
 var router = express.Router();
 const userHelper = require('../db/helpers/userHelper');
 const jwt = require('jsonwebtoken');
-const { jwtOptions, passport } = require('../passport');
+
+const passport = require('passport')
+const passportJWT = require('passport-jwt');
+const ExtractJwt = passportJWT.ExtractJwt;
+
+const jwtOptions = {
+  jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+  secretOrKey: 'secret key'
+};
 
 /* GET users listing. */
 router.get('/', function(req, res, next) {
@@ -10,7 +18,7 @@ router.get('/', function(req, res, next) {
 });
 
 router.get('/login', passport.authenticate('jwt', {session: false}), (req, res, next) => {
-  res.json('hooray! See without token');
+  res.json('hooray! authorized');
 });
 
 router.post('/login', function(req, res, next) {

@@ -10,7 +10,7 @@ module.exports = {
     },
     getUserById: id => {
         return new Promise((resolve, reject) => {
-            User.findOne({id}).then(res => {
+            User.findOne({_id: id}).then(res => {
                 resolve(res);   
             });
         });
