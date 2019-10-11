@@ -34,10 +34,25 @@ module.exports = {
                 });
             });
         });
+    },
+    checkPassword: user => {
+        return new Promise((resolve, reject) => {
+            User.findOne({email: user.email}).then(response => {
+                if(response) {
+                    bcrypt.compare(user.password, response.password, function(err, res) {
+                        if(res) {
+                            resolve(response);
+                        }
+                        else {
+                            reject({message: "Incorrect password"});
+                        }
+                    });
+                }
+                else {
+                    reject({message: "Email not found"});
+                }
+            });
+            
+        });
     }
-    // verifyPassword: plain_password => {
-    //     return new Promise((resolve, reject) => {
-    //         const saltRounds = 10;
-    //     });
-    // }
 };

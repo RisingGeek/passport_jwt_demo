@@ -23,10 +23,10 @@ router.get('/login', passport.authenticate('jwt', {session: false}), (req, res, 
 
 router.post('/signup', function(req, res, next) {
   if(!req.body.email || !req.body.password) {
-    res.status(401).json({message: "Please provide email and password"});
+    res.status(400).json({message: "Please provide email and password"});
   }
   if(req.body.password < 8) {
-    res.status(401).json({message: "Password length should be greater than 8"});
+    res.status(400).json({message: "Password length should be greater than 8"});
   }
   userHelper.addUser({email: req.body.email, password: req.body.password}).then(response => {
     res.json({message: "Successfully added user"});
@@ -36,19 +36,18 @@ router.post('/signup', function(req, res, next) {
 });
 
 router.post('/login', function(req, res, next) {
-  userHelper.getUserByEmail(req.body.email).then(user => {
-    if(!user) {
-      res.status(401).json({message: 'Email not found'});
-    }
-    // userHelper.verifyPassword(req.body.password).then()
-    if(req.body.password === 'pass') {
-      let payload = { id: user.id};
-      let token = jwt.sign(payload, jwtOptions.secretOrKey);
-      res.json({message: 'ok', token: token});
-    }
-    else {
-      res.status(401).json({message: 'password does not match'});
-    }
+  if(!req.body.email || !req.body.password) {
+    res.status(400).json({message: "Please provide email and password"})
+  }
+  if(req.body.password < 8) {
+    res.status(401).json({message: "Password length should be greater than 8"});
+  }
+  userHelper.checkPassword({email: req.body.email, password: req.body.password}).then(user => {
+    let payload = { id: user.id};
+    let token = jwt.sign(payload, jwtOptions.secretOrKey);
+    res.json({message: 'ok', token: token});
+  }).catch(err => {
+    res.status(401).json({message: err});
   });
 });
 
