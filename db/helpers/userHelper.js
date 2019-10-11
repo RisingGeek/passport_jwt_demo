@@ -1,9 +1,9 @@
 const User = require('../models/Users');
 
 module.exports = {
-    getUserByName: username => {
+    getUserByEmail: email => {
         return new Promise((resolve, reject) => {
-            User.findOne({username}).then(res => {
+            User.findOne({email}).then(res => {
                 resolve(res);   
             });
         });

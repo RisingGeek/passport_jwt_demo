@@ -22,7 +22,7 @@ router.get('/login', passport.authenticate('jwt', {session: false}), (req, res, 
 });
 
 router.post('/login', function(req, res, next) {
-  userHelper.getUserByName(req.body.username).then(user => {
+  userHelper.getUserByEmail(req.body.email).then(user => {
     if(req.body.password === 'pass') {
       let payload = { id: user.id};
       let token = jwt.sign(payload, jwtOptions.secretOrKey);
