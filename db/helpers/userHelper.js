@@ -122,7 +122,7 @@ userHelper = {
                         if(!res) {
                             reject({message: "Invalid token"});
                         }
-                        if(Date.now() - res.createdAt < 1000*10) {
+                        if(Date.now() - res.createdAt < 1000*60*10) {
                             Promise.all([
                                 Token.deleteOne({_userId: res._userId}),
                                 User.updateOne({_id: res._userId}, {
@@ -131,7 +131,7 @@ userHelper = {
                             ]).then(values => {
                                 console.log(values)
                                 resolve({message: "Email verified"});
-                            }).catch(err => {getUserByEmail
+                            }).catch(err => {
                                 console.log("error")
                                 reject({message: err});
                             });
@@ -148,9 +148,7 @@ userHelper = {
     },
     forgetPassword: (email, headers) => {
         return new Promise((resolve, reject) => {
-            console.log('here',userHelper.getUserByEmail)
             userHelper.getUserByEmail(email).then(user => {
-                console.log(email)
                 new Token({
                     _userId: user._id, 
                     token: crypto.randomBytes(16).toString('hex')
@@ -188,6 +186,35 @@ userHelper = {
                 console.log(err);
             })
         })
+    },
+    resetPassword: (token, password) => {
+        return new Promise((resolve, reject) => {
+            Token.findOne({token}, {_userId: 1, createdAt: 1}).then(res => {
+                if(!res) {
+                    reject({message: "Invalid token"});
+                }
+                if(Date.now() - res.createdAt < 1000*60*10) {
+                    const saltRounds = 10;
+                    bcrypt.hash(password, saltRounds, function(err, hash) {
+                        Promise.all([
+                            Token.deleteOne({_userId: res._userId}),
+                            User.updateOne({_id: res._userId}, {
+                                $set: {password: hash}
+                            })
+                        ]).then(values => {
+                            resolve({message: "Password reset successful"});
+                        }).catch(err => {
+                            reject({message: err});
+                        });
+                    });
+                }
+                else {
+                    reject({message: "Token expired"});
+                }
+            }).catch(err => {
+                reject({message: err});
+            });
+        });
     }
 };
 

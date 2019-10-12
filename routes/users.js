@@ -44,7 +44,7 @@ router.post('/login', function(req, res, next) {
     res.status(400).json({message: "Please provide email and password"})
   }
   if(req.body.password < 8) {
-    res.status(401).json({message: "Password length should be greater than 8"});
+    res.status(400).json({message: "Password length should be greater than 8"});
   }
   userHelper.checkPassword({email: req.body.email, password: req.body.password}).then(user => {
     let payload = { id: user.id};
@@ -69,6 +69,20 @@ router.post('/forget-password', function(req, res, next) {
   }
   userHelper.forgetPassword(req.body.email, req.headers).then(response => {
     res.json(response);
+  }).catch(err => {
+    res.json(err);
+  });
+});
+
+router.put('/reset-password/:token', function(req, res, next) {
+  if(!req.body.password) {
+    res.status(400).json({message: "Please provide password"});
+  }
+  if(req.body.password < 8) {
+    res.status(400).json({message: "Password length should be greater than 8"});
+  }
+  userHelper.resetPassword(req.params.token, req.body.password).then(response => {
+    res.json(response)
   }).catch(err => {
     res.json(err);
   });
