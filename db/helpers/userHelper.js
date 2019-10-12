@@ -17,7 +17,12 @@ module.exports = {
     getUserById: id => {
         return new Promise((resolve, reject) => {
             User.findOne({_id: id}).then(res => {
-                resolve(res);   
+                if(res) {
+                    resolve(res);
+                }   
+                else {
+                    reject({message: "No such user"});
+                }
             }).catch(err => {
 
             });
@@ -58,10 +63,10 @@ module.exports = {
             
         });
     },
-    generateToken: (user, headers) => {
+    generateToken: (id, headers) => {
         return new Promise((resolve, reject) => {
             new Token({
-                _userId: user._id, 
+                _userId: id, 
                 token: crypto.randomBytes(16).toString('hex')
             }).save().then(res => {
                 let transporter = nodemailer.createTransport({
@@ -78,7 +83,7 @@ module.exports = {
                     html: `
                     <p>Hello,</p>
                     <p>Please click on the following link to confirm your account:</p>
-                    <a href=http://${headers.host}/users/confirmation/${res.token}>http://${headers.host}/users/confirmation/${res.token}</a>
+                    <a href=http://${headers.host}/users/confirmation/${res.token}?id=${id}>http://${headers.host}/users/confirmation/${res.token}?id=${id}</a>
                     `
                 }
 
@@ -94,5 +99,46 @@ module.exports = {
                 });
             })
         });
+    },
+    verifyToken: (token, id) => {
+        return new Promise((resolve, reject) => {
+            if(!require('mongodb').ObjectId.isValid(id)) {
+                reject({message: "Invalid id"});
+            }
+            User.findOne({_id: id}, {verified: 1}).then(res => {
+                if(!res) {
+                    reject({message: "Wrong id"});
+                }
+                if(res && res.verified) {
+                    resolve({message: "Email already verified"});
+                }
+                else {
+                    Token.findOne({token}, {_userId: 1, createdAt: 1}).then(res => {
+                        if(!res) {
+                            reject({message: "Invalid token"});
+                        }
+                        if(Date.now() - res.createdAt < 1000*10) {
+                            Promise.all([
+                                Token.deleteOne({_userId: res._userId}),
+                                User.updateOne({_id: res._userId}, {
+                                    $set: {verified: true}
+                                })
+                            ]).then(values => {
+                                console.log(values)
+                                resolve({message: "Email verified"});
+                            }).catch(err => {
+                                console.log("error")
+                                reject({message: err});
+                            });
+                        }
+                        else {
+                            reject({message: "Token expired"});
+                        }
+                    }).catch(err => {
+                        reject({message: err});
+                    });
+                }
+            });
+        });  
     }
 };
