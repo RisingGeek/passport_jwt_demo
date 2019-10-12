@@ -63,4 +63,15 @@ router.get('/confirmation/:token', function(req, res, next) {
   });
 });
 
+router.post('/forget-password', function(req, res, next) {
+  if(!req.body.email) {
+    res.status(400).json({message: "Please provide email"});
+  }
+  userHelper.forgetPassword(req.body.email, req.headers).then(response => {
+    res.json(response);
+  }).catch(err => {
+    res.json(err);
+  });
+});
+
 module.exports = router;

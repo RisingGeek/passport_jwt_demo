@@ -4,11 +4,16 @@ const bcrypt = require('bcrypt');
 const crypto = require('crypto');
 const nodemailer = require('nodemailer');
 
-module.exports = {
+userHelper = {
     getUserByEmail: email => {
         return new Promise((resolve, reject) => {
             User.findOne({email}).then(res => {
-                resolve(res);   
+                if(res) {
+                    resolve(res);
+                }
+                else {
+                    reject({message: "No such user"});
+                }   
             }).catch(err => {
 
             });
@@ -126,7 +131,7 @@ module.exports = {
                             ]).then(values => {
                                 console.log(values)
                                 resolve({message: "Email verified"});
-                            }).catch(err => {
+                            }).catch(err => {getUserByEmail
                                 console.log("error")
                                 reject({message: err});
                             });
@@ -140,5 +145,50 @@ module.exports = {
                 }
             });
         });  
+    },
+    forgetPassword: (email, headers) => {
+        return new Promise((resolve, reject) => {
+            console.log('here',userHelper.getUserByEmail)
+            userHelper.getUserByEmail(email).then(user => {
+                console.log(email)
+                new Token({
+                    _userId: user._id, 
+                    token: crypto.randomBytes(16).toString('hex')
+                }).save().then(res => {
+                    let transporter = nodemailer.createTransport({
+                        service: 'gmail',
+                        auth: {
+                            user: process.env.NODEMAILER_USER,
+                            pass: process.env.NODEMAILER_PASS
+                        }
+                    });
+                    let mailOptions = {
+                        from: 'bhavaypuri15@gmail.com',
+                        to: 'bhavaypuri15@gmail.com',
+                        subject: 'Forget Password',
+                        html: `
+                        <p>Hello,</p>
+                        <p>Please click on the following link to reset your password:</p>
+                        <a href=http://${headers.host}/users/reset-password/${res.token}?id=${user._id}>http://${headers.host}/users/reset-password/${res.token}?id=${user._id}</a>
+                        `
+                    }
+            
+                    transporter.sendMail(mailOptions, function(err, info) {
+                        if(err) {
+                            console.log(err);
+                            reject({message: 'Some error occured. Email not sent.'})
+                        }
+                        else {
+                            console.log('sent email', info.response);
+                            resolve({message: 'Email sent for forgot password'});
+                        }
+                    });
+                });
+            }).catch(err => {
+                console.log(err);
+            })
+        })
     }
 };
+
+module.exports = userHelper;
