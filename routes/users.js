@@ -29,7 +29,11 @@ router.post('/signup', function(req, res, next) {
     res.status(400).json({message: "Password length should be greater than 8"});
   }
   userHelper.addUser({email: req.body.email, password: req.body.password}).then(response => {
-    res.json({message: "Successfully added user"});
+    userHelper.generateToken(response, req.headers).then(msg => {
+      res.json(msg);
+    }).catch(err => {
+      res.status(500).json(err);
+    });
   }).catch(err => {
     res.status(401).json({message: err});
   });
@@ -47,8 +51,12 @@ router.post('/login', function(req, res, next) {
     let token = jwt.sign(payload, jwtOptions.secretOrKey);
     res.json({message: 'ok', token: token});
   }).catch(err => {
-    res.status(401).json({message: err});
+    res.status(401).json(err);
   });
+});
+
+router.get('/confirmation/:token', function(req, res, next) {
+  res.json({verified: true});
 });
 
 module.exports = router;
