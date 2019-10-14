@@ -68,7 +68,7 @@ userHelper = {
             
         });
     },
-    generateToken: (id, headers) => {
+    generateToken: (id, email, headers) => {
         return new Promise((resolve, reject) => {
             new Token({
                 _userId: id, 
@@ -83,7 +83,7 @@ userHelper = {
                 });
                 let mailOptions = {
                     from: 'bhavaypuri15@gmail.com',
-                    to: 'bhavaypuri15@gmail.com',
+                    to: email,
                     subject: 'Confirm account',
                     html: `
                     <p>Hello,</p>
@@ -162,7 +162,7 @@ userHelper = {
                     });
                     let mailOptions = {
                         from: 'bhavaypuri15@gmail.com',
-                        to: 'bhavaypuri15@gmail.com',
+                        to: email,
                         subject: 'Forget Password',
                         html: `
                         <p>Hello,</p>

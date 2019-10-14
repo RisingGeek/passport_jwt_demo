@@ -29,7 +29,7 @@ router.post('/signup', function(req, res, next) {
     res.status(400).json({message: "Password length should be greater than 8"});
   }
   userHelper.addUser({email: req.body.email, password: req.body.password}).then(response => {
-    userHelper.generateToken(response._id, req.headers).then(msg => {
+    userHelper.generateToken(response._id, response.email, req.headers).then(msg => {
       res.json(msg);
     }).catch(err => {
       res.status(500).json(err);
