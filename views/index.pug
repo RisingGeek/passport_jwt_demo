@@ -1,5 +1,21 @@
 extends layout
 
 block content
-  h1= title
-  p Welcome to #{title}
+  h1 APIs:
+  ul
+    li
+      p 
+      | User signup(POST) 
+      a(href="/signup") /signup
+    li
+     p
+     | User login(POST) 
+     a(href="/login") /login
+    li
+      p 
+      | Forget Password(POST) 
+      a(href="/forget-password") /forget-password
+    li
+      p
+      | Reset Password(PUT) 
+      a(href="/reset-password/:token") /reset-password/:token
